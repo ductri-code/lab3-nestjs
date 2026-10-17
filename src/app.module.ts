@@ -11,13 +11,11 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      // Dán thẳng chuỗi Neon của bạn vào đây để ép buộc kết nối thẳng lên cloud
-      url: 'postgresql://neondb_owner:npg_K2gQqSM8upCj@ep-tiny-mouse-b4wnakw1-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require',
+      // Wispbyte injects DATABASE_URL at runtime. Never hardcode credentials here.
+      url: getDatabaseUrl(),
       autoLoadEntities: true,
-      synchronize: true, // Tự động tạo bảng
-      ssl: {
-        rejectUnauthorized: false, // Bắt buộc cho Neon Postgres
-      },
+      // Avoid automatic schema changes in production. Use migrations for schema updates.
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     OrdersModule,
     PaymentsModule,
@@ -30,3 +28,37 @@ import { AuthModule } from './auth/auth.module';
   providers: [],
 })
 export class AppModule {}
+
+function getDatabaseUrl(): string {
+  const value = process.env.DATABASE_URL?.trim();
+
+  if (!value) {
+    throw new Error(
+      'DATABASE_URL is missing. Set it in the hosting environment before starting the app.',
+    );
+  }
+
+  let parsed: URL;
+
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error('DATABASE_URL is not a valid PostgreSQL connection URL.');
+  }
+
+  if (
+    parsed.protocol !== 'postgres:' &&
+    parsed.protocol !== 'postgresql:'
+  ) {
+    throw new Error('DATABASE_URL must use the postgres:// or postgresql:// protocol.');
+  }
+
+  if (
+    process.env.NODE_ENV === 'production' &&
+    ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname)
+  ) {
+    throw new Error('Production DATABASE_URL must not point to localhost.');
+  }
+
+  return value;
+}
