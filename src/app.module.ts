@@ -15,7 +15,7 @@ import { AuthModule } from './auth/auth.module';
       url: getDatabaseUrl(),
       autoLoadEntities: true,
       // Avoid automatic schema changes in production. Use migrations for schema updates.
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: process.env.NODE_ENV === 'development',
     }),
     OrdersModule,
     PaymentsModule,
