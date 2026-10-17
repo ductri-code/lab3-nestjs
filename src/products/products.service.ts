@@ -1,17 +1,17 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm'; // Thêm DataSource cho Transaction
+import { Repository, DataSource } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-import { StockDto } from './dto/stock.dto'; // Import file bạn vừa tạo
+import { StockDto } from './dto/stock.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private productsRepository: Repository<Product>,
-    private dataSource: DataSource, // Tiêm DataSource vào
+    private dataSource: DataSource,
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -19,10 +19,23 @@ export class ProductsService {
     return await this.productsRepository.save(newProduct);
   }
 
-  async findAll(): Promise<Product[]> {
-    return await this.productsRepository.find({ 
-      relations: { category: true } 
+  // --- 📄 LẤY DANH SÁCH CÓ PHÂN TRANG ---
+  async findAll(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [result, total] = await this.productsRepository.findAndCount({
+      relations: { category: true },
+      take: Number(limit),
+      skip: Number(skip),
     });
+
+    return {
+      data: result,
+      page: Number(page),
+      limit: Number(limit),
+      total: total,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: number): Promise<Product> {
@@ -65,7 +78,6 @@ export class ProductsService {
     await queryRunner.startTransaction();
 
     try {
-      // 1. Tìm product (Dùng queryRunner manager để đảm bảo nằm trong transaction)
       const product = await queryRunner.manager.findOne(Product, {
         where: { id }
       });
@@ -74,27 +86,20 @@ export class ProductsService {
         throw new NotFoundException(`Product #${id} not found`);
       }
 
-      // 2. Kiểm tra tồn kho
       if (product.quantity < stockDto.quantity) {
         throw new BadRequestException('Số lượng xuất lớn hơn tồn kho hiện tại. Đã Rollback!');
       }
 
-      // 3. Trừ quantity
       product.quantity -= stockDto.quantity;
-
-      // 4. Save product
       const updatedProduct = await queryRunner.manager.save(product);
 
-      // Nếu mọi thứ OK -> Lưu thật vào Database
       await queryRunner.commitTransaction();
       return updatedProduct;
       
     } catch (error) {
-      // Có lỗi (như xuất quá số lượng) -> Hủy bỏ mọi thay đổi
       await queryRunner.rollbackTransaction();
       throw error; 
     } finally {
-      // Giải phóng connection
       await queryRunner.release();
     }
   }

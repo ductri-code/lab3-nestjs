@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Put, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { StockDto } from './dto/stock.dto'; // Thêm import StockDto
+import { StockDto } from './dto/stock.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -13,9 +13,14 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
+  // --- 📄 API LẤY DANH SÁCH CÓ PHÂN TRANG ---
+  // Ví dụ gọi: GET /products?page=1&limit=10
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.productsService.findAll(page, limit);
   }
 
   @Get(':id')

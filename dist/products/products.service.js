@@ -28,10 +28,20 @@ let ProductsService = class ProductsService {
         const newProduct = this.productsRepository.create(createProductDto);
         return await this.productsRepository.save(newProduct);
     }
-    async findAll() {
-        return await this.productsRepository.find({
-            relations: { category: true }
+    async findAll(page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+        const [result, total] = await this.productsRepository.findAndCount({
+            relations: { category: true },
+            take: Number(limit),
+            skip: Number(skip),
         });
+        return {
+            data: result,
+            page: Number(page),
+            limit: Number(limit),
+            total: total,
+            totalPages: Math.ceil(total / limit),
+        };
     }
     async findOne(id) {
         const product = await this.productsRepository.findOne({

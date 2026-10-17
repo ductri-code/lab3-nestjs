@@ -8,7 +8,13 @@ export declare class ProductsService {
     private dataSource;
     constructor(productsRepository: Repository<Product>, dataSource: DataSource);
     create(createProductDto: CreateProductDto): Promise<Product>;
-    findAll(): Promise<Product[]>;
+    findAll(page?: number, limit?: number): Promise<{
+        data: Product[];
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    }>;
     findOne(id: number): Promise<Product>;
     update(id: number, updateProductDto: UpdateProductDto): Promise<Product>;
     remove(id: number): Promise<void>;
