@@ -32,10 +32,10 @@ export class Coupon {
   @Column({ type: 'int', default: 0 })
   usedCount: number;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamp' })
   startAt: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamp' })
   endAt: Date;
 
   @Column({ default: true })
