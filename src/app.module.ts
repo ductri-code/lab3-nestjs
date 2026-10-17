@@ -10,17 +10,14 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'postgres', // Đổi sang postgres
-      url: process.env.DATABASE_URL, // Tự động lấy đường dẫn Database từ biến môi trường trên Wispbyte
-      autoLoadEntities: true,
-      synchronize: true, // Vẫn giữ nguyên để tự tạo bảng
-      ssl: true, // Bắt buộc bật SSL cho database online (Neon)
-      extra: {
-        ssl: {
-          rejectUnauthorized: false, 
-        },
-      },
-    }),
+  type: 'postgres',
+  url: process.env.DATABASE_URL, // <--- Bắt buộc phải có dòng này
+  autoLoadEntities: true,
+  synchronize: true,
+  ssl: {
+    rejectUnauthorized: false, // <--- Bắt buộc cho Neon
+  },
+}),
     OrdersModule,
     PaymentsModule,
     CouponsModule,

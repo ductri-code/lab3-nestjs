@@ -26,11 +26,8 @@ exports.AppModule = AppModule = __decorate([
                 url: process.env.DATABASE_URL,
                 autoLoadEntities: true,
                 synchronize: true,
-                ssl: true,
-                extra: {
-                    ssl: {
-                        rejectUnauthorized: false,
-                    },
+                ssl: {
+                    rejectUnauthorized: false,
                 },
             }),
             orders_module_1.OrdersModule,
