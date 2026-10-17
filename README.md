@@ -112,3 +112,22 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+## Database configuration (Neon / Wispbyte)
+
+The application reads PostgreSQL credentials from the `DATABASE_URL` environment variable.
+Do not hardcode database credentials in TypeScript or commit a real `.env` file.
+
+### Wispbyte
+
+1. In the server's environment-variable settings, create `DATABASE_URL`.
+2. Paste the connection string copied from Neon (use the pooled connection string when appropriate and retain its SSL query parameter).
+3. Rebuild the application from the latest source and restart it. The production start command is `npm run start:prod`, which runs `node dist/main`.
+4. If `DATABASE_URL` is missing or invalid, startup now fails with a safe error message rather than silently falling back to localhost.
+
+### Local development
+
+Copy `.env.example` to `.env`, replace the example URL locally, and run `npm install`, `npm run build`, and `npm run start:dev`. Never commit `.env`.
+
+In production, TypeORM schema synchronization is disabled. Apply database schema changes through migrations before deploying changes that require new or altered tables.
