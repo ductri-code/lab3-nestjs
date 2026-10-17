@@ -11,11 +11,13 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: 'postgresql://neondb_owner:npg_K2gQqSM8upCj@ep-tiny-mouse-b4wnakw1-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require', // Dán thẳng chuỗi Neon của bạn vào đây
+      // Dùng trực tiếp process.env.DATABASE_URL nếu Wispbyte đọc được, 
+      // nếu vẫn lỗi, bạn có thể dán thẳng chuỗi kết nối vào đây như hình bạn của bạn:
+      url: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_K2gQqSM8upCj@ep-tiny-mouse-b4wnakw1-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: true, // Lấy theo biến DB_SYNCHRONIZE trên Wispbyte
       ssl: {
-        rejectUnauthorized: false, // Bắt buộc để kết nối Neon
+        rejectUnauthorized: false, // Bắt buộc cho Neon
       },
     }),
     OrdersModule,
